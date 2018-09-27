@@ -18,6 +18,8 @@ import javafx.scene.text.TextAlignment;
 
 import java.util.*;
 
+import static com.codecool.klondike.Card.isSameSuit;
+
 public class Game extends Pane {
 
     private List<Card> deck = new ArrayList<>();
@@ -36,28 +38,34 @@ public class Game extends Pane {
 
 
     private void doubleClickHandler(Card card){
-        for(Pile pile : foundationPiles){
-            //TODO
-            if(pile.getTopCard()!=null){
-                Card topPileCard = pile.getTopCard();
+        List<Card> cardList = new ArrayList<>();
+        cardList.add(card);
 
-                //dopisac warunek jesli karta jest wyzsza
-                if(pile.getTopCard().isSameSuit(topPileCard, card)){
-                    List<Card> cardList = new ArrayList<>();
-                    cardList.add(card);
+        for(Pile pile : foundationPiles){
+            if(card.getRank() == Rank.Ace){
+                if(pile.getTopCard()==null){
                     MouseUtil.slideToDest(cardList, pile);
                     break;
                 }
-            }
-        }
+            }//END FOR LOOP FOR ACE
+            else if(pile.getTopCard()!=null){
+                Card topPileCard = pile.getTopCard();
+                if(isSameSuit(topPileCard, card) && card.getRank().previousEqual(topPileCard)){
+                    MouseUtil.slideToDest(cardList, pile);
+                    break;
+                }
+            }//END OF FOR LOOP FOR REST OF CARDS
+        }//END OF PILE FOR LOOP
     }
 
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         if (e.getClickCount() == 2 && !e.isConsumed()) {
-//            e.consume();
-            System.out.println("source: " + e.getSource());
+            e.consume();
             Card card = (Card) e.getSource();
-            doubleClickHandler(card);
+            if(!card.isFaceDown()){
+                doubleClickHandler(card);
+            }
+            return;
         }
         Card card = (Card) e.getSource();
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
@@ -169,10 +177,8 @@ public class Game extends Pane {
             System.out.println("asdasd");
             return true;
         }
-        else if (tableauPiles.contains(destPile))
-            return true;
+        else return tableauPiles.contains(destPile);
 
-        return false;
     }
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
         Pile result = null;
@@ -221,7 +227,7 @@ public class Game extends Pane {
             };
         }
         else {
-            Boolean isLastCardFaceDown = sourcePile.getTopCard().isFaceDown();
+            boolean isLastCardFaceDown = sourcePile.getTopCard().isFaceDown();
             Card saveLastCardFromPile = sourcePile.getTopCard();
             move = () -> {
                 if(isLastCardFaceDown) {

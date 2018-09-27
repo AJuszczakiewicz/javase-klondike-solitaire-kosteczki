@@ -76,17 +76,17 @@ public class Card extends ImageView {
 
     @Override
     public String toString() {
-        return "The " + "Rank" + rank + " of " + "Suit" + suit;
+        return "The " + rank + " of " + suit;
     }
 
     public static boolean isOppositeColor(Card card1, Card card2) {
-        if (card1.suit.getValue() <= 2 && card2.suit.getValue() > 2)
-            return true;
+        return card1.suit.getValue() <= 2 && card2.suit.getValue() > 2;
 
-        return false;
     }
 
     public static boolean isSameSuit(Card card1, Card card2) {
+        System.out.println(card1.getSuit());
+        System.out.println(card2.getSuit());
         return card1.getSuit() == card2.getSuit();
     }
 
