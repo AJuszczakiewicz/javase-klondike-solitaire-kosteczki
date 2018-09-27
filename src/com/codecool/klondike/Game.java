@@ -145,7 +145,6 @@ public class Game extends Pane {
 
     public boolean isMoveValid(Card card, Pile destPile) {
         if (foundationPiles.contains(destPile)) {
-            System.out.println("asdasd");
             return true;
         }
         else if (tableauPiles.contains(destPile))
@@ -153,6 +152,19 @@ public class Game extends Pane {
 
         return false;
     }
+
+    private boolean isAllCardsOpen(Pile stockPile, Pile discardPile, List<Pile> tableauPiles){
+        boolean result = true;
+        if (stockPile.getCards()==null && discardPile.getCards().size()==1){
+            for (Pile pile : tableauPiles) {
+                for (Card card : pile.getCards()){
+                    if (card.isFaceDown() == true) result = false;
+                }
+            }
+        }
+        return result;
+    }
+
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
         Pile result = null;
         for (Pile pile : piles) {
