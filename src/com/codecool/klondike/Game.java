@@ -33,6 +33,7 @@ public class Game extends Pane {
     private static double FOUNDATION_GAP = 0;
     private static double TABLEAU_GAP = 30;
 
+    private Pile sourcePile;
 
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
@@ -55,6 +56,7 @@ public class Game extends Pane {
 
     private EventHandler<MouseEvent> onMouseDraggedHandler = e -> {
         Card card = (Card) e.getSource();
+        sourcePile = ((Card) e.getSource()).getContainingPile();
         Pile activePile = card.getContainingPile();
         if (activePile.getPileType() == Pile.PileType.STOCK)
             return;
@@ -78,9 +80,13 @@ public class Game extends Pane {
             return;
         Card card = (Card) e.getSource();
         Pile pile = getValidIntersectingPile(card, tableauPiles);
+        System.out.println("pile type: "+pile.getPileType());
         //TODO
         if (pile != null) {
             handleValidMove(card, pile);
+            if(!isTopCardRevealed(sourcePile)){
+                sourcePile.getTopCard().flip();
+            }
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
             draggedCards = null;
@@ -195,6 +201,10 @@ public class Game extends Pane {
         setBackground(new Background(new BackgroundImage(tableBackground,
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+    }
+
+    public boolean isTopCardRevealed(Pile pile){
+        return (!pile.getTopCard().isFaceDown());
     }
 
 }
