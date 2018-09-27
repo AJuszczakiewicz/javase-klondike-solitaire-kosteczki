@@ -7,10 +7,12 @@ import javafx.scene.paint.Color;
 
 import java.util.*;
 
+import static java.util.Collections.*;
+
 public class Card extends ImageView {
 
     private Suit suit;
-    private int rank;
+    private Rank rank;
     private boolean faceDown;
 
     private Image backFace;
@@ -23,7 +25,7 @@ public class Card extends ImageView {
     public static final int WIDTH = 150;
     public static final int HEIGHT = 215;
 
-    public Card(Suit suit, int rank, boolean faceDown) {
+    public Card(Suit suit, Rank rank, boolean faceDown) {
         this.suit = suit;
         this.rank = rank;
         this.faceDown = faceDown;
@@ -38,7 +40,7 @@ public class Card extends ImageView {
         return suit;
     }
 
-    public int getRank() {
+    public Rank getRank() {
         return rank;
     }
 
@@ -47,7 +49,7 @@ public class Card extends ImageView {
     }
 
     public String getShortName() {
-        return "S" + suit + "R" + rank;
+        return "S" + suit.getValue() + "R" + rank.getValue();
     }
 
     public DropShadow getDropShadow() {
@@ -74,12 +76,14 @@ public class Card extends ImageView {
 
     @Override
     public String toString() {
-        return "The " + "Rank" + rank + " of " + "Suit" + suit;
+        return "The " + rank + " of " + suit;
     }
 
     public static boolean isOppositeColor(Card card1, Card card2) {
-        //TODO
-        return true;
+        if (card1.suit.getValue() <= 2 && card2.suit.getValue() > 2)
+            return true;
+
+        return false;
     }
 
     public static boolean isSameSuit(Card card1, Card card2) {
@@ -91,41 +95,24 @@ public class Card extends ImageView {
 
         //Zamienic for na for generyczny
         for (Suit suit : Suit.values()) {
-            for (int rank = 1; rank < 14; rank++) {
-                result.add(new Card(suit, rank, true));
+            for (Rank cardRank: Rank.values()){
+                result.add(new Card(suit, cardRank, true));
             }
         }
+        Collections.shuffle(result);
         return result;
     }
 
+
     public static void loadCardImages() {
         cardBackImage = new Image("card_images/card_back.png");
-        String suitName = "";
         for (Suit suit : Suit.values()) {
-            switch (suit) {
-                case HEARTS:
-                    suitName = "hearts";
-                    break;
-                case DIAMONDS:
-                    suitName = "diamonds";
-                    break;
-                case SPADES:
-                    suitName = "spades";
-                    break;
-                case CLUBS:
-                    suitName = "clubs";
-                    break;
-            }
-            for (int rank = 1; rank < 14; rank++) {
-                String cardName = suitName + rank;
-                String cardId = "S" + suit + "R" + rank;
+            for (Rank cardRank: Rank.values()){
+                String cardName = suit.getTextName() + cardRank.getValue();
+                String cardId = "S" + suit.getValue() + "R" + cardRank.getValue();
                 String imageFileName = "card_images/" + cardName + ".png";
                 cardFaceImages.put(cardId, new Image(imageFileName));
             }
         }
     }
-
-
-    public enum Suit {DIAMONDS, HEARTS, CLUBS, SPADES}
-
 }
