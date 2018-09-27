@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
@@ -12,6 +13,8 @@ import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.TextAlignment;
 
 import java.util.*;
 
@@ -58,6 +61,8 @@ public class Game extends Pane {
         }
         Card card = (Card) e.getSource();
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
+            saveMove(card);
+
             card.moveToPile(discardPile);
             card.flip();
             card.setMouseTransparent(false);
@@ -104,11 +109,13 @@ public class Game extends Pane {
             return;
         Card card = (Card) e.getSource();
         Pile pile = getValidIntersectingPile(card, tableauPiles);
-        if(pile != null) {
+        if(pile == null) {
             pile = getValidIntersectingPile(card, foundationPiles);
         }
         //TODO
         if (pile != null) {
+            saveMove(card);
+          
             //TODO isOpositeColor
             handleValidMove(card, pile);
         } else {
@@ -126,6 +133,19 @@ public class Game extends Pane {
         deck = Card.createNewDeck();
         initPiles();
         dealCards();
+
+        // ======= Added dummy for test ===============
+        Button button = new Button();
+        button.setText("Undo");
+        button.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                Undoer.getInstance().undoAction();
+            }
+        });
+        // ============================================
+
+        getChildren().add(button);
     }
 
     public void addMouseEventHandlers(Card card) {
@@ -183,8 +203,36 @@ public class Game extends Pane {
             msg = String.format("Placed %s to %s.", card, destPile.getTopCard());
         }
         System.out.println(msg);
+        
         MouseUtil.slideToDest(draggedCards, destPile);
+
         draggedCards.clear();
+    }
+
+    private void saveMove(Card card) {
+        List<Card> copyOfDraggedList = FXCollections.observableArrayList(draggedCards);
+        Pile sourcePile = card.getContainingPile();
+        Runnable move;
+
+        if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
+            move = () -> {
+                card.moveToPile(sourcePile);
+                card.flip();
+            };
+        }
+        else {
+            Boolean isLastCardFaceDown = sourcePile.getTopCard().isFaceDown();
+            Card saveLastCardFromPile = sourcePile.getTopCard();
+            move = () -> {
+                if(isLastCardFaceDown) {
+                    saveLastCardFromPile.flip();
+                }
+
+                MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
+            };
+        }
+
+        Undoer.getInstance().addAction(Undoer.ActionOwner.USER, move);
     }
 
 
@@ -202,6 +250,20 @@ public class Game extends Pane {
         discardPile.setLayoutY(20);
         getChildren().add(discardPile);
 
+        Button restartBtn = new Button("Restart");
+        restartBtn.setTextAlignment(TextAlignment.CENTER);
+        restartBtn.relocate(1300,840);
+        restartBtn.setStyle("-fx-font: 18 times-new-roman; -fx-base: #c26573;");
+        getChildren().add(restartBtn);
+
+        restartBtn.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent e) {
+                restart();
+            }
+        });
+
+
         for (int i = 0; i < 4; i++) {
             Pile foundationPile = new Pile(Pile.PileType.FOUNDATION, "Foundation " + i, FOUNDATION_GAP);
             foundationPile.setBlurredBackground();
@@ -218,6 +280,21 @@ public class Game extends Pane {
             tableauPiles.add(tableauPile);
             getChildren().add(tableauPile);
         }
+    }
+
+    private void clearPane() {
+        stockPile.clear();
+        discardPile.clear();
+        foundationPiles.clear();
+        tableauPiles.clear();
+        this.getChildren().clear();
+    }
+
+    private void restart() {
+        clearPane();
+        deck = Card.createNewDeck();
+        initPiles();
+        dealCards();
     }
 
     public void dealCards() {
