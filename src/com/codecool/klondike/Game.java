@@ -34,8 +34,6 @@ public class Game extends Pane {
     private static double FOUNDATION_GAP = 0;
     private static double TABLEAU_GAP = 30;
 
-    private Pile sourcePile;
-
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
@@ -59,7 +57,6 @@ public class Game extends Pane {
 
     private EventHandler<MouseEvent> onMouseDraggedHandler = e -> {
         Card card = (Card) e.getSource();
-        sourcePile = ((Card) e.getSource()).getContainingPile();
         Pile activePile = card.getContainingPile();
         if (activePile.getPileType() == Pile.PileType.STOCK)
             return;
@@ -92,14 +89,18 @@ public class Game extends Pane {
             pile = getValidIntersectingPile(card, foundationPiles);
         }
 
+
         //TODO
         if (pile != null) {
+            Pile preservePile = card.getContainingPile();
+
             saveMove(card);
           
             //TODO isOpositeColor
             handleValidMove(card, pile);
-            if(!isTopCardRevealed(sourcePile)){
-                sourcePile.getTopCard().flip();
+
+            if(!isTopCardRevealed(preservePile)){
+                preservePile.getTopCard().flip();
             }
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
@@ -188,9 +189,8 @@ public class Game extends Pane {
             msg = String.format("Placed %s to %s.", card, destPile.getTopCard());
         }
         System.out.println(msg);
-        
-        MouseUtil.slideToDest(draggedCards, destPile);
 
+        MouseUtil.slideToDest(draggedCards, destPile);
         draggedCards.clear();
     }
 
@@ -206,11 +206,9 @@ public class Game extends Pane {
             };
         }
         else {
-            Boolean isLastCardFaceDown = sourcePile.getTopCard().isFaceDown();
-            Card saveLastCardFromPile = sourcePile.getTopCard();
             move = () -> {
-                if(isLastCardFaceDown) {
-                    saveLastCardFromPile.flip();
+                if(!sourcePile.getTopCard().isFaceDown()) {
+                    sourcePile.getTopCard().flip();
                 }
 
                 MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
@@ -315,7 +313,7 @@ public class Game extends Pane {
     }
 
     public boolean isTopCardRevealed(Pile pile){
-        return (!pile.getTopCard().isFaceDown());
+        return !pile.getTopCard().isFaceDown();
     }
 
 }
