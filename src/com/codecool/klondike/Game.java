@@ -111,6 +111,8 @@ public class Game extends Pane {
         initPiles();
         dealCards();
 
+        addRestartBtn();
+
         // ======= Added dummy for test ===============
         Button button = new Button();
         button.setText("Undo");
@@ -227,20 +229,6 @@ public class Game extends Pane {
         discardPile.setLayoutY(20);
         getChildren().add(discardPile);
 
-        Button restartBtn = new Button("Restart");
-        restartBtn.setTextAlignment(TextAlignment.CENTER);
-        restartBtn.relocate(1300,840);
-        restartBtn.setStyle("-fx-font: 18 times-new-roman; -fx-base: #c26573;");
-        getChildren().add(restartBtn);
-
-        restartBtn.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent e) {
-                restart();
-            }
-        });
-
-
         for (int i = 0; i < 4; i++) {
             Pile foundationPile = new Pile(Pile.PileType.FOUNDATION, "Foundation " + i, FOUNDATION_GAP);
             foundationPile.setBlurredBackground();
@@ -259,6 +247,20 @@ public class Game extends Pane {
         }
     }
 
+    private void addRestartBtn(){
+        Button restartBtn = new Button("Restart");
+        restartBtn.setTextAlignment(TextAlignment.CENTER);
+        restartBtn.relocate(1300,840);
+        restartBtn.setStyle("-fx-font: 18 times-new-roman; -fx-base: #c26573;");
+        getChildren().add(restartBtn);
+
+        restartBtn.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent e) {
+                restart();
+            }
+        });
+    }
     private void clearPane() {
         stockPile.clear();
         discardPile.clear();
@@ -272,11 +274,26 @@ public class Game extends Pane {
         deck = Card.createNewDeck();
         initPiles();
         dealCards();
+        addRestartBtn();
     }
 
     public void dealCards() {
         Iterator<Card> deckIterator = deck.iterator();
-        //TODO
+
+        for (Pile pile: tableauPiles) {
+            int index = tableauPiles.indexOf(pile);
+
+            for(int i = 0; i < index+1; i++){
+                Card card = deckIterator.next();
+                pile.addCard(card);
+                addMouseEventHandlers(card);
+                getChildren().add(card);
+                if(i==index){
+                    card.flip();
+                }
+            }
+        }
+
         deckIterator.forEachRemaining(card -> {
             stockPile.addCard(card);
             addMouseEventHandlers(card);
