@@ -73,7 +73,7 @@ public class Game extends Pane {
             draggedCard.getDropShadow().setRadius(20);
             draggedCard.getDropShadow().setOffsetX(10);
             draggedCard.getDropShadow().setOffsetY(10);
-
+            
             draggedCard.toFront();
             draggedCard.setTranslateX(offsetX);
             draggedCard.setTranslateY(offsetY);
