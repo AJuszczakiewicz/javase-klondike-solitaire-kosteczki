@@ -76,7 +76,7 @@ public class Card extends ImageView {
 
     @Override
     public String toString() {
-        return "The " + "Rank" + rank + " of " + "Suit" + suit;
+        return "The " + rank + " of " + suit;
     }
 
     public static boolean isOppositeColor(Card card1, Card card2) {
@@ -111,7 +111,6 @@ public class Card extends ImageView {
                 String cardName = suit.getTextName() + cardRank.getValue();
                 String cardId = "S" + suit.getValue() + "R" + cardRank.getValue();
                 String imageFileName = "card_images/" + cardName + ".png";
-                System.out.println(imageFileName);
                 cardFaceImages.put(cardId, new Image(imageFileName));
             }
         }

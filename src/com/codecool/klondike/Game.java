@@ -34,7 +34,6 @@ public class Game extends Pane {
     private static double FOUNDATION_GAP = 0;
     private static double TABLEAU_GAP = 30;
 
-
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
         Card card = (Card) e.getSource();
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
@@ -89,12 +88,20 @@ public class Game extends Pane {
         if(pile == null) {
             pile = getValidIntersectingPile(card, foundationPiles);
         }
+
+
         //TODO
         if (pile != null) {
+            Pile preservePile = card.getContainingPile();
+
             saveMove(card);
           
             //TODO isOpositeColor
             handleValidMove(card, pile);
+
+            if(!isTopCardRevealed(preservePile)){
+                preservePile.getTopCard().flip();
+            }
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
             draggedCards.removeAll(draggedCards);
@@ -182,9 +189,8 @@ public class Game extends Pane {
             msg = String.format("Placed %s to %s.", card, destPile.getTopCard());
         }
         System.out.println(msg);
-        
-        MouseUtil.slideToDest(draggedCards, destPile);
 
+        MouseUtil.slideToDest(draggedCards, destPile);
         draggedCards.clear();
     }
 
@@ -200,11 +206,9 @@ public class Game extends Pane {
             };
         }
         else {
-            Boolean isLastCardFaceDown = sourcePile.getTopCard().isFaceDown();
-            Card saveLastCardFromPile = sourcePile.getTopCard();
             move = () -> {
-                if(isLastCardFaceDown) {
-                    saveLastCardFromPile.flip();
+                if(!sourcePile.getTopCard().isFaceDown()) {
+                    sourcePile.getTopCard().flip();
                 }
 
                 MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
@@ -306,6 +310,10 @@ public class Game extends Pane {
         setBackground(new Background(new BackgroundImage(tableBackground,
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+    }
+
+    public boolean isTopCardRevealed(Pile pile){
+        return !pile.getTopCard().isFaceDown();
     }
 
 }
