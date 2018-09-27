@@ -77,7 +77,7 @@ public class Game extends Pane {
         if (draggedCards.isEmpty())
             return;
         Card card = (Card) e.getSource();
-        Pile pile = getValidIntersectingPile(card, foundationPiles);
+        Pile pile = getValidIntersectingPile(card, tableauPiles);
         //TODO
         if (pile != null) {
             handleValidMove(card, pile);
@@ -111,7 +111,7 @@ public class Game extends Pane {
     }
 
     public boolean isMoveValid(Card card, Pile destPile) {
-        return isValidMoveForFoundation(card, destPile);
+        return isValidMoveForTableau(card, destPile);
     }
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
         Pile result = null;
@@ -208,4 +208,23 @@ public class Game extends Pane {
         return result;
     }
 
-}
+    private boolean isValidMoveForTableau(Card card, Pile tableauPile) {
+        boolean result = false;
+        if (tableauPile.getTopCard() == null && card.getRank() == 13) {result = true;
+        }
+
+        else if (tableauPile.getTopCard() != null) {
+            if (tableauPile.getTopCard().getRank()-card.getRank()== 1) {
+                if ((card.getSuit() == Card.Suit.DIAMONDS || card.getSuit() == Card.Suit.HEARTS) &&
+                        (tableauPile.getTopCard().getSuit() == Card.Suit.CLUBS || tableauPile.getTopCard().getSuit() == Card.Suit.SPADES))
+                    result = true;
+                else if ((card.getSuit() == Card.Suit.CLUBS || card.getSuit() == Card.Suit.SPADES) &&
+                        (tableauPile.getTopCard().getSuit() == Card.Suit.DIAMONDS || tableauPile.getTopCard().getSuit() == Card.Suit.HEARTS))
+                    result = true;
+            }
+        }
+        return result;
+        }
+    }
+
+
