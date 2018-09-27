@@ -84,11 +84,11 @@ public class Game extends Pane {
         if (draggedCards.isEmpty())
             return;
         Card card = (Card) e.getSource();
+
         Pile pile = getValidIntersectingPile(card, tableauPiles);
         if(pile == null) {
             pile = getValidIntersectingPile(card, foundationPiles);
         }
-
 
         //TODO
         if (pile != null) {
@@ -104,7 +104,7 @@ public class Game extends Pane {
             }
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
-            draggedCards.removeAll(draggedCards);
+            draggedCards.clear();
         }
     };
 
@@ -152,11 +152,10 @@ public class Game extends Pane {
 
     public boolean isMoveValid(Card card, Pile destPile) {
         if (foundationPiles.contains(destPile)) {
-            System.out.println("asdasd");
-            return true;
+            return isValidMoveForFoundation(card, destPile);
         }
         else if (tableauPiles.contains(destPile))
-            return true;
+            return isValidMoveForTableau(card, destPile);
 
         return false;
     }
@@ -310,6 +309,35 @@ public class Game extends Pane {
         setBackground(new Background(new BackgroundImage(tableBackground,
                 BackgroundRepeat.REPEAT, BackgroundRepeat.REPEAT,
                 BackgroundPosition.CENTER, BackgroundSize.DEFAULT)));
+    }
+
+    private boolean isValidMoveForFoundation(Card card, Pile foundationPile) {
+        boolean result = false;
+        if (foundationPile.getTopCard() == null) {
+            if (card.getRank().getValue() == 1) result = true;
+        } else {
+            if (foundationPile.getTopCard().getRank().getValue() - card.getRank().getValue() == -1 &&
+                    foundationPile.getTopCard().getSuit() == card.getSuit()) result = true;
+        }
+        return result;
+    }
+
+    private boolean isValidMoveForTableau(Card card, Pile tableauPile) {
+        boolean result = false;
+        if (tableauPile.getTopCard() == null && card.getRank().getValue() == 13) {result = true;
+        }
+
+        else if (tableauPile.getTopCard() != null) {
+            if (tableauPile.getTopCard().getRank().getValue() - card.getRank().getValue() == 1) {
+                if ((card.getSuit() == Suit.DIAMONDS || card.getSuit() == Suit.HEARTS) &&
+                        (tableauPile.getTopCard().getSuit() == Suit.CLUBS || tableauPile.getTopCard().getSuit() == Suit.SPADES))
+                    result = true;
+                else if ((card.getSuit() == Suit.CLUBS || card.getSuit() == Suit.SPADES) &&
+                        (tableauPile.getTopCard().getSuit() == Suit.DIAMONDS || tableauPile.getTopCard().getSuit() == Suit.HEARTS))
+                    result = true;
+            }
+        }
+        return result;
     }
 
     public boolean isTopCardRevealed(Pile pile){
