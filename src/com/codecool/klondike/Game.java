@@ -16,7 +16,11 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 
+import javax.swing.text.html.HTMLDocument;
+import java.text.CollationElementIterator;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Game extends Pane {
 
@@ -92,16 +96,10 @@ public class Game extends Pane {
 
         //TODO
         if (pile != null) {
-            Pile preservePile = card.getContainingPile();
-
             saveMove(card);
           
             //TODO isOpositeColor
             handleValidMove(card, pile);
-
-            if(!isTopCardRevealed(preservePile)){
-                preservePile.getTopCard().flip();
-            }
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
             draggedCards.clear();
@@ -142,10 +140,11 @@ public class Game extends Pane {
     }
 
     public void refillStockFromDiscard() {
-        Collections.reverse(discardPile.getCards());
-        discardPile.getCards().forEach(card -> card.flip());
+        CopyOnWriteArrayList<Card> cards = new CopyOnWriteArrayList<>(discardPile.getCards());
+        Collections.reverse(cards);
 
-        MouseUtil.slideToDest(discardPile.getCards(), stockPile);
+        cards.forEach(card -> card.flip());
+        MouseUtil.slideToDest(cards, stockPile);
 
         System.out.println("Stock refilled from discard pile.");
     }
@@ -198,20 +197,28 @@ public class Game extends Pane {
         Pile sourcePile = card.getContainingPile();
         Runnable move;
 
-        if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
-            move = () -> {
-                card.moveToPile(sourcePile);
-                card.flip();
-            };
-        }
-        else {
-            move = () -> {
-                if(!sourcePile.getTopCard().isFaceDown()) {
-                    sourcePile.getTopCard().flip();
-                }
 
-                MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
-            };
+        switch (card.getContainingPile().getPileType()) {
+            case STOCK:
+                move = () -> {
+                    card.moveToPile(sourcePile);
+                    card.flip();
+                };
+                break;
+
+            case DISCARD:
+                move = () -> card.moveToPile(sourcePile);
+                break;
+
+            default:
+                move = () -> {
+                    if(!sourcePile.getTopCard().isFaceDown()) {
+                        sourcePile.getTopCard().flip();
+                    }
+
+                    MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
+                };
+
         }
 
         Undoer.getInstance().addAction(Undoer.ActionOwner.USER, move);
@@ -339,9 +346,4 @@ public class Game extends Pane {
         }
         return result;
     }
-
-    public boolean isTopCardRevealed(Pile pile){
-        return !pile.getTopCard().isFaceDown();
-    }
-
 }
