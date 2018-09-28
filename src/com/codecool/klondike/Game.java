@@ -22,6 +22,8 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import static com.codecool.klondike.Card.isSameSuit;
+
 public class Game extends Pane {
 
     private List<Card> deck = new ArrayList<>();
@@ -38,7 +40,39 @@ public class Game extends Pane {
     private static double FOUNDATION_GAP = 0;
     private static double TABLEAU_GAP = 30;
 
+
+    private void doubleClickHandler(Card card){
+        List<Card> cardList = new ArrayList<>();
+        cardList.add(card);
+
+        for(Pile pile : foundationPiles){
+            if(card.getRank() == Rank.Ace){
+                if(pile.getTopCard()==null){
+                    saveMove(card);
+                    MouseUtil.slideToDest(cardList, pile);
+                    break;
+                }
+            }//END FOR LOOP FOR ACE
+            else if(pile.getTopCard()!=null){
+                Card topPileCard = pile.getTopCard();
+                if(isSameSuit(topPileCard, card) && card.getRank().previousEqual(topPileCard)){
+                    saveMove(card);
+                    MouseUtil.slideToDest(cardList, pile);
+                    break;
+                }
+            }//END OF FOR LOOP FOR REST OF CARDS
+        }//END OF PILE FOR LOOP
+    }
+
     private EventHandler<MouseEvent> onMouseClickedHandler = e -> {
+        if (e.getClickCount() == 2 && !e.isConsumed()) {
+            e.consume();
+            Card card = (Card) e.getSource();
+            if(!card.isFaceDown()){
+                doubleClickHandler(card);
+            }
+            return;
+        }
         Card card = (Card) e.getSource();
         if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
             saveMove(card);
@@ -62,6 +96,9 @@ public class Game extends Pane {
     private EventHandler<MouseEvent> onMouseDraggedHandler = e -> {
         Card card = (Card) e.getSource();
         Pile activePile = card.getContainingPile();
+
+        if(card.isFaceDown()) return;
+
         if (activePile.getPileType() == Pile.PileType.STOCK)
             return;
         double offsetX = e.getSceneX() - dragStartX;
@@ -193,10 +230,8 @@ public class Game extends Pane {
     }
 
     private void saveMove(Card card) {
-        List<Card> copyOfDraggedList = FXCollections.observableArrayList(draggedCards);
         Pile sourcePile = card.getContainingPile();
         Runnable move;
-
 
         switch (card.getContainingPile().getPileType()) {
             case STOCK:
@@ -206,13 +241,16 @@ public class Game extends Pane {
                 };
                 break;
 
+            case FOUNDATION:
             case DISCARD:
                 move = () -> card.moveToPile(sourcePile);
                 break;
 
             default:
+                List<Card> copyOfDraggedList = FXCollections.observableArrayList(draggedCards);
+
                 move = () -> {
-                    if(!sourcePile.getTopCard().isFaceDown()) {
+                    if(sourcePile.getTopCard() != null && !sourcePile.getTopCard().isFaceDown()) {
                         sourcePile.getTopCard().flip();
                     }
 
