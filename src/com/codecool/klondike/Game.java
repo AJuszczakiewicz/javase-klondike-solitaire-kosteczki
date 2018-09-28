@@ -198,20 +198,28 @@ public class Game extends Pane {
         Pile sourcePile = card.getContainingPile();
         Runnable move;
 
-        if (card.getContainingPile().getPileType() == Pile.PileType.STOCK) {
-            move = () -> {
-                card.moveToPile(sourcePile);
-                card.flip();
-            };
-        }
-        else {
-            move = () -> {
-                if(!sourcePile.getTopCard().isFaceDown()) {
-                    sourcePile.getTopCard().flip();
-                }
 
-                MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
-            };
+        switch (card.getContainingPile().getPileType()) {
+            case STOCK:
+                move = () -> {
+                    card.moveToPile(sourcePile);
+                    card.flip();
+                };
+                break;
+
+            case DISCARD:
+                move = () -> card.moveToPile(sourcePile);
+                break;
+
+            default:
+                move = () -> {
+                    if(!sourcePile.getTopCard().isFaceDown()) {
+                        sourcePile.getTopCard().flip();
+                    }
+
+                    MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
+                };
+
         }
 
         Undoer.getInstance().addAction(Undoer.ActionOwner.USER, move);
