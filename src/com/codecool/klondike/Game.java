@@ -188,14 +188,8 @@ public class Game extends Pane {
         }
         System.out.println(msg);
 
-        Pile sourcePile = card.getContainingPile();
-
         MouseUtil.slideToDest(draggedCards, destPile);
         draggedCards.clear();
-
-        if(sourcePile.getTopCard() != null && !isTopCardRevealed(sourcePile)) {
-            sourcePile.getTopCard().flip();
-        }
     }
 
     private void saveMove(Card card) {
@@ -352,9 +346,4 @@ public class Game extends Pane {
         }
         return result;
     }
-
-    public boolean isTopCardRevealed(Pile pile){
-        return !pile.getTopCard().isFaceDown();
-    }
-
 }
