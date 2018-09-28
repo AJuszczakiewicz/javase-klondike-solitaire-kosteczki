@@ -92,16 +92,10 @@ public class Game extends Pane {
 
         //TODO
         if (pile != null) {
-            Pile preservePile = card.getContainingPile();
-
             saveMove(card);
           
             //TODO isOpositeColor
             handleValidMove(card, pile);
-
-            if(!isTopCardRevealed(preservePile)){
-                preservePile.getTopCard().flip();
-            }
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
             draggedCards.clear();
@@ -189,8 +183,14 @@ public class Game extends Pane {
         }
         System.out.println(msg);
 
+        Pile sourcePile = card.getContainingPile();
+
         MouseUtil.slideToDest(draggedCards, destPile);
         draggedCards.clear();
+
+        if(sourcePile.getTopCard() != null && !isTopCardRevealed(sourcePile)) {
+            sourcePile.getTopCard().flip();
+        }
     }
 
     private void saveMove(Card card) {
