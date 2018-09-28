@@ -54,10 +54,17 @@ public class MouseUtil {
             animateCardMovement(currentCard, sourceX, sourceY, targetX,
                     targetY + ((destPile.isEmpty() ? i : i + 1) * destCardGap), Duration.millis(150),
                     e -> {
+                        Pile sourcePile = currentCard.getContainingPile();
+
                         currentCard.moveToPile(destPile);
                         currentCard.getDropShadow().setRadius(2);
                         currentCard.getDropShadow().setOffsetX(0);
                         currentCard.getDropShadow().setOffsetY(0);
+
+                        Card card = sourcePile.getTopCard();
+                        if(card != null && sourcePile.getPileType() == Pile.PileType.TABLEAU && card.isFaceDown()) {
+                            card.flip();
+                        }
                     });
         }
     }
