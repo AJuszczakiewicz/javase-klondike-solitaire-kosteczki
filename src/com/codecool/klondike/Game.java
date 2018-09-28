@@ -136,10 +136,11 @@ public class Game extends Pane {
     }
 
     public void refillStockFromDiscard() {
-        Collections.reverse(discardPile.getCards());
-        discardPile.getCards().forEach(card -> card.flip());
+        CopyOnWriteArrayList<Card> cards = new CopyOnWriteArrayList<>(discardPile.getCards());
+        Collections.reverse(cards);
 
-        MouseUtil.slideToDest(discardPile.getCards(), stockPile);
+        cards.forEach(card -> card.flip());
+        MouseUtil.slideToDest(cards, stockPile);
 
         System.out.println("Stock refilled from discard pile.");
     }
