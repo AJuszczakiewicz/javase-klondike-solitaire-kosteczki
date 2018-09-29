@@ -49,6 +49,7 @@ public class Game extends Pane {
             System.out.println("Placed " + card + " to the waste.");
         }
         if(canBeAutomaticallyEnd()){
+            System.out.println("true");
             endAutomatically();
         }
     };
@@ -157,10 +158,7 @@ public class Game extends Pane {
             return false;
         } else if (!(discardPile.isEmpty())) {
             return false;
-        } else if(!(areTableCardsRevealed())){
-            return false;
-        }
-        return true;
+        } else return areTableCardsRevealed();
     }
 
     private boolean areTableCardsRevealed(){
@@ -196,7 +194,7 @@ public class Game extends Pane {
         Collections.reverse(cards);
 
         cards.forEach(card -> card.flip());
-        MouseUtil.slideToDest(cards, stockPile);
+        MouseUtil.slideToDest(cards, stockPile, null);
 
         System.out.println("Stock refilled from discard pile.");
     }
@@ -250,7 +248,11 @@ public class Game extends Pane {
         }
         System.out.println(msg);
 
-        MouseUtil.slideToDest(draggedCards, destPile);
+        MouseUtil.slideToDest(draggedCards, destPile, e -> {
+            if (canBeAutomaticallyEnd()) {
+                endAutomatically();
+            }
+            });
         draggedCards.clear();
     }
 
@@ -278,7 +280,7 @@ public class Game extends Pane {
                         sourcePile.getTopCard().flip();
                     }
 
-                    MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
+                    MouseUtil.slideToDest(copyOfDraggedList, sourcePile, null);
                 };
 
         }
