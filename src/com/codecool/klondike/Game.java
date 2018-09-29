@@ -132,6 +132,38 @@ public class Game extends Pane {
         getChildren().add(button);
     }
 
+    public boolean canBeAutomaticallyEnd() {
+        if (!(stockPile.isEmpty())) {
+            return false;
+        } else if (!(discardPile.isEmpty())) {
+            return false;
+        } else if(!(areTableCardsRevealed())){
+            return false;
+        }
+        return true;
+    }
+
+    private boolean areTableCardsRevealed(){
+        for (Pile pile:tableauPiles) {
+            for (Card card:pile.getCards()) {
+                if (card.isFaceDown()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void flipAllTableCardsFaceUp(){
+        for (Pile pile:tableauPiles) {
+            for (Card card:pile.getCards()) {
+                if (card.isFaceDown()) {
+                    card.flip();
+                }
+            }
+        }
+    }
+
     public void addMouseEventHandlers(Card card) {
         card.setOnMousePressed(onMousePressedHandler);
         card.setOnMouseDragged(onMouseDraggedHandler);
@@ -224,7 +256,6 @@ public class Game extends Pane {
         Undoer.getInstance().addAction(Undoer.ActionOwner.USER, move);
     }
 
-
     private void initPiles() {
         stockPile = new Pile(Pile.PileType.STOCK, "Stock", STOCK_GAP);
         stockPile.setBlurredBackground();
@@ -271,6 +302,7 @@ public class Game extends Pane {
             }
         });
     }
+
     private void clearPane() {
         stockPile.clear();
         discardPile.clear();
