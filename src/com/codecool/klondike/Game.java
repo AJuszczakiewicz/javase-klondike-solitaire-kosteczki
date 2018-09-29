@@ -48,6 +48,9 @@ public class Game extends Pane {
             card.setMouseTransparent(false);
             System.out.println("Placed " + card + " to the waste.");
         }
+        if(canBeAutomaticallyEnd()){
+            endAutomatically();
+        }
     };
 
     private EventHandler<MouseEvent> stockReverseCardsHandler = e -> {
@@ -104,11 +107,18 @@ public class Game extends Pane {
             draggedCards.forEach(MouseUtil::slideBack);
             draggedCards.clear();
         }
+        if(canBeAutomaticallyEnd()){
+            endAutomatically();
+        }
     };
 
     public boolean isGameWon() {
-        //TODO
-        return false;
+        for (Pile pile:foundationPiles) {
+            if(pile.numOfCards() != 13){
+                return false;
+            }
+        }
+        return true;
     }
 
     public Game() {
@@ -128,11 +138,21 @@ public class Game extends Pane {
             }
         });
         // ============================================
-
         getChildren().add(button);
     }
 
-    public boolean canBeAutomaticallyEnd() {
+    private void endAutomatically(){
+        while(!isGameWon()){
+            for (Pile pile:tableauPiles) {
+                if(!pile.isEmpty()){
+                    Card card = pile.getTopCard();
+                    placeOnFoundationPile(card);
+                }
+            }
+        }
+    }
+
+    private boolean canBeAutomaticallyEnd() {
         if (!(stockPile.isEmpty())) {
             return false;
         } else if (!(discardPile.isEmpty())) {
@@ -190,6 +210,16 @@ public class Game extends Pane {
 
         return false;
     }
+
+    private void placeOnFoundationPile(Card card){
+        for (Pile pile:foundationPiles) {
+            if(isValidMoveForFoundation(card, pile)){
+                card.moveToPile(pile);
+                break;
+            }
+        }
+    }
+
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
         Pile result = null;
         for (Pile pile : piles) {
