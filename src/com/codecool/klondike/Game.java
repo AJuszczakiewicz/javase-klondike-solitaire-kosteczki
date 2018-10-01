@@ -82,6 +82,10 @@ public class Game extends Pane {
             card.setMouseTransparent(false);
             System.out.println("Placed " + card + " to the waste.");
         }
+        if(canBeAutomaticallyEnd()){
+            System.out.println("true");
+            endAutomatically();
+        }
     };
 
     private EventHandler<MouseEvent> stockReverseCardsHandler = e -> {
@@ -141,11 +145,18 @@ public class Game extends Pane {
             draggedCards.forEach(MouseUtil::slideBack);
             draggedCards.clear();
         }
+        if(canBeAutomaticallyEnd()){
+            endAutomatically();
+        }
     };
 
     public boolean isGameWon() {
-        //TODO
-        return false;
+        for (Pile pile:foundationPiles) {
+            if(pile.numOfCards() != 13){
+                return false;
+            }
+        }
+        return true;
     }
 
     public Game() {
@@ -165,8 +176,47 @@ public class Game extends Pane {
             }
         });
         // ============================================
-
         getChildren().add(button);
+    }
+
+    private void endAutomatically(){
+        while(!isGameWon()){
+            for (Pile pile:tableauPiles) {
+                if(!pile.isEmpty()){
+                    Card card = pile.getTopCard();
+                    placeOnFoundationPile(card);
+                }
+            }
+        }
+    }
+
+    private boolean canBeAutomaticallyEnd() {
+        if (!(stockPile.isEmpty())) {
+            return false;
+        } else if (!(discardPile.isEmpty())) {
+            return false;
+        } else return areTableCardsRevealed();
+    }
+
+    private boolean areTableCardsRevealed(){
+        for (Pile pile:tableauPiles) {
+            for (Card card:pile.getCards()) {
+                if (card.isFaceDown()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void flipAllTableCardsFaceUp(){
+        for (Pile pile:tableauPiles) {
+            for (Card card:pile.getCards()) {
+                if (card.isFaceDown()) {
+                    card.flip();
+                }
+            }
+        }
     }
 
     public void addMouseEventHandlers(Card card) {
@@ -181,7 +231,7 @@ public class Game extends Pane {
         Collections.reverse(cards);
 
         cards.forEach(card -> card.flip());
-        MouseUtil.slideToDest(cards, stockPile);
+        MouseUtil.slideToDest(cards, stockPile, null);
 
         System.out.println("Stock refilled from discard pile.");
     }
@@ -195,6 +245,16 @@ public class Game extends Pane {
 
         return false;
     }
+
+    private void placeOnFoundationPile(Card card){
+        for (Pile pile:foundationPiles) {
+            if(isValidMoveForFoundation(card, pile)){
+                card.moveToPile(pile);
+                break;
+            }
+        }
+    }
+
     private Pile getValidIntersectingPile(Card card, List<Pile> piles) {
         Pile result = null;
         for (Pile pile : piles) {
@@ -225,7 +285,11 @@ public class Game extends Pane {
         }
         System.out.println(msg);
 
-        MouseUtil.slideToDest(draggedCards, destPile);
+        MouseUtil.slideToDest(draggedCards, destPile, e -> {
+            if (canBeAutomaticallyEnd()) {
+                endAutomatically();
+            }
+            });
         draggedCards.clear();
     }
 
@@ -254,14 +318,13 @@ public class Game extends Pane {
                         sourcePile.getTopCard().flip();
                     }
 
-                    MouseUtil.slideToDest(copyOfDraggedList, sourcePile);
+                    MouseUtil.slideToDest(copyOfDraggedList, sourcePile, null);
                 };
 
         }
 
         Undoer.getInstance().addAction(Undoer.ActionOwner.USER, move);
     }
-
 
     private void initPiles() {
         stockPile = new Pile(Pile.PileType.STOCK, "Stock", STOCK_GAP);
@@ -309,6 +372,7 @@ public class Game extends Pane {
             }
         });
     }
+
     private void clearPane() {
         stockPile.clear();
         discardPile.clear();

@@ -31,7 +31,7 @@ public class MouseUtil {
                 });
     }
 
-    public static void slideToDest(List<Card> cardsToSlide, Pile destPile) {
+    public static void slideToDest(List<Card> cardsToSlide, Pile destPile,  EventHandler<ActionEvent> doAfter) {
         if (cardsToSlide == null)
             return;
         double destCardGap = destPile.getCardGap();
@@ -65,8 +65,12 @@ public class MouseUtil {
                         if(card != null && sourcePile.getPileType() == Pile.PileType.TABLEAU && card.isFaceDown()) {
                             card.flip();
                         }
+                        if (doAfter != null) {
+                            doAfter.handle(e);
+                        }
                     });
         }
+
     }
 
     private static void animateCardMovement(
