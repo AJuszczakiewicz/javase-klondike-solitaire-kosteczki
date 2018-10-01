@@ -1,20 +1,20 @@
 package com.codecool.klondike;
 
+import com.sun.tools.javac.Main;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
-import javafx.scene.control.Alert;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
+import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import javax.swing.text.html.HTMLDocument;
 import java.text.CollationElementIterator;
@@ -151,7 +151,7 @@ public class Game extends Pane {
     };
 
     public boolean isGameWon() {
-        for (Pile pile:foundationPiles) {
+        for(Pile pile:foundationPiles){
             if(pile.numOfCards() != 13){
                 return false;
             }
@@ -413,6 +413,34 @@ public class Game extends Pane {
         });
 
     }
+
+    private void popupMsg(String message) {
+        final Stage dialog = new Stage();
+        Text text = new Text(message);
+        Scene dialogScene;
+
+        final ImageView imv = new ImageView();
+        final Image image2 = new Image("/trophy.png");
+        imv.setImage(image2);
+
+        final HBox winnerPicture = new HBox();
+        winnerPicture.getChildren().add(imv);
+        winnerPicture.setAlignment(Pos.CENTER);
+
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        VBox dialogVbox = new VBox(20);
+        dialogVbox.setPadding(new Insets(10, 10, 10, 10));
+        dialogVbox.setAlignment(Pos.CENTER);
+        text.setStyle("-fx-font: 24 times-new-roman;");
+        dialogVbox.getChildren().add(text);
+        dialogVbox.getChildren().add(winnerPicture);
+        dialogScene = new Scene(dialogVbox, 250, 250);
+        dialog.setScene(dialogScene);
+        dialog.show();
+    }
+
+
+
 
     public void setTableBackground(Image tableBackground) {
         setBackground(new Background(new BackgroundImage(tableBackground,
