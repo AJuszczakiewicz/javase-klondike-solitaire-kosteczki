@@ -49,7 +49,15 @@ public class Game extends Pane {
             if(card.getRank() == Rank.Ace){
                 if(pile.getTopCard()==null){
                     saveMove(card);
-                    MouseUtil.slideToDest(cardList, pile);
+                    MouseUtil.slideToDest(cardList, pile, e ->{
+                        if(canBeAutomaticallyEnd()){
+                            endAutomatically();
+                        }
+                        if(isGameWon()){
+                            popupMsg("You are a winner");
+                        }
+                    });
+
                     break;
                 }
             }//END FOR LOOP FOR ACE
@@ -57,7 +65,14 @@ public class Game extends Pane {
                 Card topPileCard = pile.getTopCard();
                 if(isSameSuit(topPileCard, card) && card.getRank().previousEqual(topPileCard)){
                     saveMove(card);
-                    MouseUtil.slideToDest(cardList, pile);
+                    MouseUtil.slideToDest(cardList, pile, e ->{
+                        if(canBeAutomaticallyEnd()){
+                            endAutomatically();
+                        }
+                        if(isGameWon()){
+                            popupMsg("You are a winner");
+                        }
+                    });
                     break;
                 }
             }//END OF FOR LOOP FOR REST OF CARDS
@@ -81,10 +96,6 @@ public class Game extends Pane {
             card.flip();
             card.setMouseTransparent(false);
             System.out.println("Placed " + card + " to the waste.");
-        }
-        if(canBeAutomaticallyEnd()){
-            System.out.println("true");
-            endAutomatically();
         }
     };
 
@@ -271,6 +282,14 @@ public class Game extends Pane {
             return card.getBoundsInParent().intersects(pile.getTopCard().getBoundsInParent());
     }
 
+    private void endGame(){
+        if(canBeAutomaticallyEnd()){
+            endAutomatically();
+        }
+        if(isGameWon()){
+            popupMsg("You are a winner");
+        }
+    }
     private void handleValidMove(Card card, Pile destPile) {
         String msg = null;
         if (destPile.isEmpty()) {
@@ -284,8 +303,11 @@ public class Game extends Pane {
         System.out.println(msg);
 
         MouseUtil.slideToDest(draggedCards, destPile, e -> {
-            if (canBeAutomaticallyEnd()) {
+            if(canBeAutomaticallyEnd()){
                 endAutomatically();
+            }
+            if(isGameWon()){
+                popupMsg("You are a winner");
             }
             });
         draggedCards.clear();
@@ -388,7 +410,7 @@ public class Game extends Pane {
         addUndoButton();
     }
 
-    public void dealCards() {
+    private void dealCards() {
         Iterator<Card> deckIterator = deck.iterator();
 
         for (Pile pile: tableauPiles) {
@@ -437,9 +459,6 @@ public class Game extends Pane {
         dialog.setScene(dialogScene);
         dialog.show();
     }
-
-
-
 
     public void setTableBackground(Image tableBackground) {
         setBackground(new Background(new BackgroundImage(tableBackground,
