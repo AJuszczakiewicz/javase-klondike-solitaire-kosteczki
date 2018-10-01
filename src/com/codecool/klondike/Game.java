@@ -135,11 +135,8 @@ public class Game extends Pane {
             pile = getValidIntersectingPile(card, foundationPiles);
         }
 
-        //TODO
         if (pile != null) {
             saveMove(card);
-          
-            //TODO isOpositeColor
             handleValidMove(card, pile);
         } else {
             draggedCards.forEach(MouseUtil::slideBack);
@@ -165,8 +162,10 @@ public class Game extends Pane {
         dealCards();
 
         addRestartBtn();
+        addUndoButton();
+    }
 
-        // ======= Added dummy for test ===============
+    private void addUndoButton(){
         Button button = new Button();
         button.setText("Undo");
         button.setOnMouseClicked(new EventHandler<MouseEvent>() {
@@ -175,7 +174,6 @@ public class Game extends Pane {
                 Undoer.getInstance().undoAction();
             }
         });
-        // ============================================
         getChildren().add(button);
     }
 
@@ -387,6 +385,7 @@ public class Game extends Pane {
         initPiles();
         dealCards();
         addRestartBtn();
+        addUndoButton();
     }
 
     public void dealCards() {
